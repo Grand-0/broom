@@ -1,17 +1,26 @@
 import { BrandCard } from "./brand-card";
+import { useStandsInfo } from "./hooks/use-get-stands-info";
 
 export default function BrandBookScene() {
+  const { result } = useStandsInfo();
+
+  if (typeof result === "undefined") {
+    return <></>;
+  }
+
+  if (result instanceof Error) {
+    return <>{result.message}</>;
+  }
+
+  if (!result.length) {
+    return <>Отсутствует информация о стендах</>;
+  }
+
   return (
     <div className="content-scene">
-      <BrandCard
-        name="Win.dev.loc"
-        os="windows"
-        product={{
-          dataBase: "postgree",
-          name: "devalt9.loc",
-          version: "20260702.28",
-        }}
-      />
+      {result.map((r) => (
+        <BrandCard standInfo={r} />
+      ))}
     </div>
   );
 }

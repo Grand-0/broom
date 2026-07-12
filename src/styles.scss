@@ -5,6 +5,11 @@
     background: linear-gradient(135deg, #222831, #393e46);
 }
 
+p,
+h3 {
+    user-select: none;
+}
+
 .header {
     height: 10%;
 
@@ -65,7 +70,9 @@
 
         .content-scene-brandCard {
             margin: 20px;
-            height: 170px;
+
+            display: grid;
+            grid-template-rows: 40px 250px 160px;
 
             background: rgba(#dfd0b8, 0.4);
 

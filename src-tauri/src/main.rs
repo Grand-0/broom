@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    local_stand_manager_lib::run()
+    broom_lib::run()
 }
