@@ -1,0 +1,75 @@
+.layout {
+    height: calc(100% - 40px);
+    width: calc(100% - 40px);
+    padding: 20px;
+    background: linear-gradient(135deg, #222831, #393e46);
+}
+
+.header {
+    height: 10%;
+
+    background: rgba(#dfd0b8, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(#dfd0b8, 0.27);
+    box-shadow: 0 0 30px 5px rgba(16, 5, 5, 0.28);
+
+    div {
+        height: 100%;
+        display: flex;
+    }
+}
+
+.content {
+    height: 90%;
+    display: flex;
+    justify-content: space-between;
+
+    .navigation {
+        width: 20%;
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+
+        background: rgba(#dfd0b8, 0.2);
+        border-radius: 12px;
+
+        .navigation-card {
+            display: flex;
+            align-items: center;
+            height: 60px;
+
+            margin: 10px;
+
+            background: rgba(#dfd0b8, 0.1);
+            border-radius: 8px;
+
+            img {
+                margin-left: 7px;
+            }
+        }
+
+        .active {
+            background: rgba(#dfd0b8, 0.4);
+        }
+    }
+
+    .content-scene {
+        width: calc(80% - 15px);
+
+        background: rgba(#dfd0b8, 0.1);
+        border-radius: 12px;
+
+        margin: 15px 0 0 15px;
+
+        .content-scene-brandCard {
+            margin: 20px;
+            height: 170px;
+
+            background: rgba(#dfd0b8, 0.4);
+
+            border-radius: 12px;
+        }
+    }
+}
