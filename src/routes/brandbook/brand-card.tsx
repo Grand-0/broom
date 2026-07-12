@@ -4,21 +4,6 @@ type BrandCardProps = {
   standInfo: IStandInfo;
 };
 
-/**
-"target_server_name": "devalt9.devel.loc",
-"target_account": "root",
-"instance_dir": "/opt/delo",
-"app_name": "delo228",
-"db_provider": "PostgreSQL",
-"db_server": "localhost",
-"db_owner": "X2021",
-"db_admin": "postgres",
-"web_server_name": "delo228.devel.loc",
-"port_a": 10001,
-"port_b": 10002,
-"smb_server_address": "devalt9.devel.loc"
- */
-
 export function BrandCard({ standInfo }: BrandCardProps) {
   return (
     <div className="content-scene-brandCard">
