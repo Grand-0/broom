@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "local-stand-manager",
+  "productName": "broom",
   "version": "0.1.0",
-  "identifier": "grand-zerQ-local-stand-manager",
+  "identifier": "broom",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
