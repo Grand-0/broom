@@ -25,7 +25,6 @@ export function BrandCard({ standInfo }: BrandCardProps) {
             <p>{`Тип используемой СУБД: ${standInfo.db_provider}`}</p>
           </li>
           <li>
-            {" "}
             <p>{`Адрес СУБД: ${standInfo.db_server}`}</p>
           </li>
           <li>
