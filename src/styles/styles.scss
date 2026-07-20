@@ -1,0 +1,311 @@
+@use "./themes/main/variables";
+@use "./variables" as shared;
+
+body {
+    margin: 0;
+
+    height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    user-select: none;
+    margin: 0;
+
+    font-family: shared.$font-family;
+}
+
+.scene {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    gap: 0;
+
+    overflow: hidden;
+
+    background-color: variables.$bg-primary;
+
+    height: 100%;
+    width: 100%;
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+        justify-content: flex-start;
+        padding: 0 12px 12px 12px;
+
+        gap: 4px;
+
+        height: 100%;
+
+        width: 220px;
+
+        background-color: variables.$bg-sidebar;
+
+        .logo {
+            display: flex;
+            flex-direction: row;
+            flex-shrink: 0;
+            align-items: center;
+
+            gap: 12px;
+            padding: 16px 12px;
+
+            height: fit-content;
+            width: calc(100% - 24px);
+
+            > img {
+                height: 26px;
+                width: 28px;
+            }
+
+            > h3 {
+                color: variables.$text-primary;
+                font-family: shared.$font-family;
+                font-size: 20px;
+                font-style: normal;
+                font-weight: 600;
+                letter-spacing: 0px;
+                line-height: normal;
+                text-align: left;
+                white-space: nowrap;
+            }
+        }
+
+        .navigation {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            flex-direction: column;
+            flex-shrink: 0;
+
+            gap: 2px;
+
+            height: fit-content;
+            width: 100%;
+
+            .navigation-card-base {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                flex-direction: row;
+                flex-shrink: 0;
+
+                gap: 12px;
+                padding: 12px;
+
+                height: fit-content;
+                width: calc(100% - 24px);
+
+                border-radius: shared.$radius-sm;
+            }
+
+            .navigation-image-base {
+                height: 20px;
+                width: 20px;
+            }
+
+            .navigation-card {
+                @extend .navigation-card-base;
+                background-color: variables.$nav-item-bg;
+
+                img {
+                    @extend .navigation-image-base;
+
+                    color: variables.$text-secondary;
+                }
+
+                h5 {
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 400;
+                    letter-spacing: 0px;
+                    line-height: normal;
+                    text-align: left;
+
+                    color: variables.$text-secondary;
+                }
+            }
+
+            .navigation-card-active {
+                @extend .navigation-card-base;
+                background-color: variables.$nav-item-active-bg;
+
+                img {
+                    @extend .navigation-image-base;
+
+                    fill: variables.$accent;
+                }
+
+                h5 {
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 400;
+                    letter-spacing: 0px;
+                    line-height: normal;
+                    text-align: left;
+
+                    color: variables.$accent;
+                }
+            }
+        }
+    }
+
+    .right-panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        align-items: flex-start;
+        justify-content: flex-start;
+
+        gap: 0;
+
+        height: 100%;
+
+        .header {
+            display: flex;
+            flex-direction: row;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: flex-start;
+
+            gap: 12px;
+            padding: 15px 24px;
+
+            height: 60px;
+            width: calc(100% - 48px);
+
+            background-color: variables.$bg-card;
+
+            .hamburger {
+                display: flex;
+            }
+
+            > h4 {
+                color: variables.$text-primary;
+                font-family: shared.$font-family;
+                font-size: 20px;
+                font-style: normal;
+                font-weight: 600;
+                letter-spacing: 0px;
+                line-height: normal;
+                text-align: left;
+                white-space: nowrap;
+            }
+        }
+
+        .about-content {
+            align-items: flex-start;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            flex: 1 1 0;
+
+            gap: 20px;
+            padding: 24px;
+
+            width: calc(100% - 48px);
+
+            .about-card {
+                align-items: center;
+                display: flex;
+                justify-content: flex-start;
+                flex-direction: column;
+                flex-shrink: 0;
+
+                gap: shared.$gap-md;
+                padding: 40px;
+
+                background-color: variables.$bg-card;
+                border-radius: shared.$radius-md;
+
+                height: fit-content;
+                width: calc(100% - 80px);
+
+                & > img {
+                    width: 82px;
+                    height: 75px;
+                }
+
+                & > h1 {
+                    color: variables.$text-primary;
+                    font-size: 28px;
+                    font-style: normal;
+                    font-weight: 600;
+                    letter-spacing: 0px;
+                    line-height: normal;
+                    text-align: left;
+                    white-space: nowrap;
+                }
+
+                & > h5 {
+                    color: variables.$text-secondary;
+                    font-size: 15px;
+                    font-style: normal;
+                    font-weight: 400;
+                    letter-spacing: 0px;
+                    line-height: normal;
+                    text-align: left;
+                    white-space: nowrap;
+                }
+
+                & > h6 {
+                    color: variables.$text-muted;
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 400;
+                    letter-spacing: 0px;
+                    line-height: normal;
+                    text-align: center;
+                    width: 450px;
+                }
+
+                .devider {
+                    align-items: flex-start;
+                    background-color: variables.$border;
+                    display: flex;
+                    flex-direction: row;
+                    flex-shrink: 0;
+                    gap: 0px;
+                    height: 1px;
+                    justify-content: flex-start;
+                    width: 100%;
+                }
+
+                .tech-info {
+                    align-items: center;
+                    display: flex;
+                    justify-content: flex-start;
+                    flex-direction: column;
+                    flex-shrink: 0;
+
+                    gap: 8px;
+
+                    height: fit-content;
+                    width: 450px;
+
+                    & > p {
+                        box-sizing: border-box;
+                        color: variables.$text-muted;
+                        font-size: 13px;
+                        font-style: normal;
+                        font-weight: 400;
+                        letter-spacing: 0px;
+                        line-height: normal;
+                        text-align: left;
+                        white-space: nowrap;
+                    }
+                }
+            }
+        }
+    }
+}
