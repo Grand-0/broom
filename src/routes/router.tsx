@@ -1,18 +1,5 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
-import BrandBookScene from "./brandbook/scene";
-import { useEffect } from "react";
+import { BrowserRouter, BrowserRouterProps } from "react-router-dom";
 
-export function Router() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    navigate("/Brandbook");
-  }, []);
-
-  return (
-    <Routes>
-      <Route path="/Brandbook" element={<BrandBookScene />} />
-      <Route path="/LD" element={<>LD</>} />
-    </Routes>
-  );
+export function RouterProvider({ children }: Pick<BrowserRouterProps, "children">) {
+    return <BrowserRouter children={children} />;
 }
