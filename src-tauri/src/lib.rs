@@ -36,7 +36,7 @@ pub fn run() {
                 if let Some(parent) = config_path.parent() {
                     fs::create_dir_all(parent)?;
                 }
-                fs::write(&config_path, "{}")?;
+                fs::write(&config_path, "[]")?;
             }
 
             Ok(())

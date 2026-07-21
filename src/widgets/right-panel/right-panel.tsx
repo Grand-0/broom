@@ -3,6 +3,8 @@ import { Header } from "../header";
 import { RouteNames } from "../../routes/sources";
 import { lazy } from "react";
 
+import "./right-panel.scss";
+
 const AboutContent = lazy(() => import("../../routes/about"));
 const BrandBookContent = lazy(() => import("../../routes/brandbook"));
 

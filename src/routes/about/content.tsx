@@ -1,3 +1,5 @@
+import "./about.scss";
+
 export function AboutContent() {
     return (
         <div className="content">

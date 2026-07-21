@@ -1,0 +1,27 @@
+@use '../../styles/themes/main/variables' as *;
+@use '../../styles/variables' as shared;
+
+.header {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 15px 24px;
+    height: 60px;
+    width: calc(100% - 48px);
+    background-color: $bg-card;
+
+    .hamburger {
+        display: flex;
+    }
+
+    > h4 {
+        color: $text-primary;
+        font-family: shared.$font-family;
+        font-size: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+}
