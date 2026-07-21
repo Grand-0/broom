@@ -1,6 +1,8 @@
 import { useLocation } from "react-router-dom";
 import { getTitle } from "./title";
 
+import "./header.scss";
+
 export function Header() {
     const location = useLocation();
 

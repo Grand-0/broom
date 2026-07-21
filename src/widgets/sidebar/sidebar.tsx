@@ -1,6 +1,8 @@
 import { NavigationCard } from "../../components/navigation-card";
 import { RouteNames } from "../../routes/sources";
 
+import "./sidebar.scss";
+
 export function Sider() {
     return (
         <div className="sidebar">

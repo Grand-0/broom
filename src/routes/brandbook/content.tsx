@@ -1,6 +1,23 @@
 import { StandCard } from "../../components/stand-card";
+import { useStandsInfo } from "./hooks/use-get-stands-info";
+
+import "./brandbook.scss";
 
 export function BrandBookContent() {
+    const { result } = useStandsInfo();
+
+    if (typeof result === "undefined") {
+        return <></>;
+    }
+
+    if (result instanceof Error) {
+        return <>{result.message}</>;
+    }
+
+    if (!result.length) {
+        return <>Отсутствует информация о стендах</>;
+    }
+
     return (
         <div className="content">
             <div className="brandbook-header">
@@ -9,6 +26,9 @@ export function BrandBookContent() {
                 </button>
             </div>
             <div className="brandbook-stand-list">
+                {result.map((s) => (
+                    <StandCard standInfo={s} />
+                ))}
                 <StandCard
                     standInfo={{
                         app_name: "TestData",

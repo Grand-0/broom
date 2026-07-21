@@ -1,0 +1,94 @@
+@use '../../styles/themes/main/variables' as *;
+@use '../../styles/variables' as shared;
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-shrink: 0;
+    justify-content: flex-start;
+    padding: 0 12px 12px 12px;
+    gap: 4px;
+    height: 100%;
+    width: 220px;
+    background-color: $bg-sidebar;
+
+    .logo {
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 12px;
+        height: fit-content;
+        width: calc(100% - 24px);
+
+        > img {
+            height: 26px;
+            width: 28px;
+        }
+
+        > h3 {
+            color: $text-primary;
+            font-size: 20px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+    }
+
+    .navigation {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 2px;
+        height: fit-content;
+        width: 100%;
+
+        .navigation-card-base {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            flex-shrink: 0;
+            gap: 12px;
+            padding: 12px;
+            height: fit-content;
+            width: calc(100% - 24px);
+            border-radius: shared.$radius-sm;
+        }
+
+        .navigation-image-base {
+            height: 20px;
+            width: 20px;
+        }
+
+        .navigation-card {
+            @extend .navigation-card-base;
+            background-color: $nav-item-bg;
+
+            img {
+                @extend .navigation-image-base;
+            }
+
+            h5 {
+                font-size: 14px;
+                font-weight: 400;
+                color: $text-secondary;
+            }
+        }
+
+        .navigation-card-active {
+            @extend .navigation-card-base;
+            background-color: $nav-item-active-bg;
+
+            img {
+                @extend .navigation-image-base;
+            }
+
+            h5 {
+                font-size: 14px;
+                font-weight: 400;
+                color: $accent;
+            }
+        }
+    }
+}
