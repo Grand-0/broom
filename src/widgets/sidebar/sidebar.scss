@@ -12,6 +12,24 @@
     height: 100%;
     width: 220px;
     background-color: $bg-sidebar;
+    transition: width 0.2s;
+
+    &.collapsed {
+        width: 64px;
+
+        .logo {
+            padding: 16px 0;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .navigation-card,
+        .navigation-card-active {
+            justify-content: center;
+            padding: 12px 0;
+            width: 100%;
+        }
+    }
 
     .logo {
         display: flex;

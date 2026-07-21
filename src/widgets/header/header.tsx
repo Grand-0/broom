@@ -1,9 +1,15 @@
 import { useLocation } from "react-router-dom";
 import { getTitle } from "./title";
+import { Hamburger } from "../../components/hamburger";
 
 import "./header.scss";
 
-export function Header() {
+type HeaderProps = {
+    onToggleSidebar: () => void;
+    sidebarCollapsed: boolean;
+};
+
+export function Header({ onToggleSidebar, sidebarCollapsed }: HeaderProps) {
     const location = useLocation();
 
     const title = getTitle(location);
@@ -12,7 +18,7 @@ export function Header() {
 
     return (
         <div className="header">
-            <div className="hamburger"></div>
+            <Hamburger active={!sidebarCollapsed} onClick={onToggleSidebar} />
             <h4>{title}</h4>
         </div>
     );

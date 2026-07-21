@@ -13,10 +13,6 @@
     width: calc(100% - 48px);
     background-color: $bg-card;
 
-    .hamburger {
-        display: flex;
-    }
-
     > h4 {
         color: $text-primary;
         font-family: shared.$font-family;
