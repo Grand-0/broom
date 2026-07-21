@@ -1,3 +1,4 @@
+import { BrandbookIcon, BroomIcon, InfoIcon, SettingsIcon } from "../../components/icons";
 import { NavigationCard } from "../../components/navigation-card";
 import { RouteNames } from "../../routes/sources";
 
@@ -7,26 +8,23 @@ export function Sider() {
     return (
         <div className="sidebar">
             <div className="logo">
-                <img src="/icons/broom.svg" />
+                {/*<img src="/icons/broom.svg" />*/}
+                <BroomIcon />
                 <h3>Broom</h3>
             </div>
 
             <div className="navigation">
                 <NavigationCard
-                    imagePath="/icons/brandbook.svg"
+                    icon={<BrandbookIcon />}
                     toPath={`/${RouteNames.BrandBook}`}
                     title="Brandbook"
                 />
                 <NavigationCard
-                    imagePath="/icons/settings.svg"
+                    icon={<SettingsIcon />}
                     toPath={`/${RouteNames.Settings}`}
                     title="Settings"
                 />
-                <NavigationCard
-                    imagePath="/icons/info.svg"
-                    toPath={`/${RouteNames.About}`}
-                    title="Info"
-                />
+                <NavigationCard icon={<InfoIcon />} toPath={`/${RouteNames.About}`} title="Info" />
             </div>
         </div>
     );

@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
 
 const host = process.env.TAURI_DEV_HOST;
 const packageVersion = JSON.stringify(process.env.npm_package_version);
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), svgr()],
   envPrefix: ['VITE_', 'TAURI_ENV_*'],
   define: {
     "import.meta.env.APP_VERSION": packageVersion,
