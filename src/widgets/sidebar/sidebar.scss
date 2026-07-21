@@ -1,5 +1,5 @@
-@use '../../styles/themes/main/variables' as *;
-@use '../../styles/variables' as shared;
+@use "../../styles/themes/main/variables" as *;
+@use "../../styles/variables" as shared;
 
 .sidebar {
     display: flex;
@@ -23,9 +23,10 @@
         height: fit-content;
         width: calc(100% - 24px);
 
-        > img {
+        > svg {
             height: 26px;
             width: 28px;
+            color: $text-primary;
         }
 
         > h3 {
@@ -65,8 +66,9 @@
             @extend .navigation-card-base;
             background-color: $nav-item-bg;
 
-            img {
+            svg {
                 @extend .navigation-image-base;
+                color: $text-secondary;
             }
 
             h5 {
@@ -80,8 +82,9 @@
             @extend .navigation-card-base;
             background-color: $nav-item-active-bg;
 
-            img {
+            svg {
                 @extend .navigation-image-base;
+                color: $accent;
             }
 
             h5 {

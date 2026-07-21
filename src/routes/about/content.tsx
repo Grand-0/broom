@@ -1,10 +1,11 @@
+import { BroomIcon } from "../../components/icons";
 import "./about.scss";
 
 export function AboutContent() {
     return (
         <div className="content">
             <div className="about-card">
-                <img src="/icons/broom.svg" />
+                <BroomIcon />
                 <h1>Broom</h1>
                 <h5>Version {import.meta.env["APP_VERSION"]}</h5>
                 <h6>Desktop application for managing Hyper-V stands</h6>

@@ -1,5 +1,5 @@
-@use '../../styles/themes/main/variables' as *;
-@use '../../styles/variables' as shared;
+@use "../../styles/themes/main/variables" as *;
+@use "../../styles/variables" as shared;
 
 .about-card {
     display: flex;
@@ -12,6 +12,12 @@
     border-radius: shared.$radius-md;
     height: fit-content;
     width: calc(100% - 80px);
+
+    > svg {
+        color: $text-muted;
+        height: 75px;
+        width: 82px;
+    }
 
     > h1 {
         color: $text-primary;

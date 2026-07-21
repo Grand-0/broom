@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { IStandInfo } from "../../models";
+
 import "./stand-card.scss";
+import { ArrowIcon } from "../icons";
 
 type StandCardProps = {
     standInfo: IStandInfo;
@@ -40,13 +42,15 @@ export function StandCard({ standInfo }: StandCardProps) {
                     {/* <button className="control-btn success" title="Run">▶️</button> */}
                     {/* <button className="control-btn danger" title="Stop">⏹</button> */}
                     {/* <button className="control-btn ghost" title="Refresh">⟲</button> */}
-                    <button className="control-btn destructive" title="Delete">🗑</button>
+                    <button className="control-btn destructive" title="Delete">
+                        🗑
+                    </button>
                     <button
                         className="control-btn ghost"
                         title="Collapse"
                         onClick={() => setCollapsed((c) => !c)}
                     >
-                        <img src="/icons/arrow.svg" className={`collapse-arrow ${collapsed ? "collapsed" : ""}`} alt="Collapse" />
+                        <ArrowIcon className={`collapse-arrow ${collapsed ? "collapsed" : ""}`} />
                     </button>
                 </div>
             </div>

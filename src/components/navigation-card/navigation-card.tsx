@@ -3,11 +3,11 @@ import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 type NavigationCardProps = {
     title: string;
-    imagePath: string;
+    icon: React.ReactElement;
     toPath: string;
 };
 
-export function NavigationCard({ imagePath, title, toPath }: NavigationCardProps) {
+export function NavigationCard({ icon, title, toPath }: NavigationCardProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -22,7 +22,7 @@ export function NavigationCard({ imagePath, title, toPath }: NavigationCardProps
             className={isActive ? "navigation-card-active" : "navigation-card"}
             onClick={onNavigate}
         >
-            <img src={imagePath} alt={title} />
+            {icon}
             <h5>{title}</h5>
         </div>
     );
