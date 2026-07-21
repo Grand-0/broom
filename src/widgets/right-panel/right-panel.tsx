@@ -8,10 +8,15 @@ import "./right-panel.scss";
 const AboutContent = lazy(() => import("../../routes/about"));
 const BrandBookContent = lazy(() => import("../../routes/brandbook"));
 
-export function RightPanel() {
+type RightPanelProps = {
+    onToggleSidebar: () => void;
+    sidebarCollapsed: boolean;
+};
+
+export function RightPanel({ onToggleSidebar, sidebarCollapsed }: RightPanelProps) {
     return (
         <div className="right-panel">
-            <Header />
+            <Header onToggleSidebar={onToggleSidebar} sidebarCollapsed={sidebarCollapsed} />
             <Routes>
                 <Route path="/">
                     <Route index element={<Navigate to={`/${RouteNames.BrandBook}`} replace />} />

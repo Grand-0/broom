@@ -5,9 +5,10 @@ type NavigationCardProps = {
     title: string;
     icon: React.ReactElement;
     toPath: string;
+    collapsed?: boolean;
 };
 
-export function NavigationCard({ icon, title, toPath }: NavigationCardProps) {
+export function NavigationCard({ icon, title, toPath, collapsed = false }: NavigationCardProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -19,11 +20,13 @@ export function NavigationCard({ icon, title, toPath }: NavigationCardProps) {
 
     return (
         <div
-            className={isActive ? "navigation-card-active" : "navigation-card"}
+            className={
+                `${isActive ? "navigation-card-active" : "navigation-card"}${collapsed ? " collapsed" : ""}`
+            }
             onClick={onNavigate}
         >
             {icon}
-            <h5>{title}</h5>
+            {!collapsed && <h5>{title}</h5>}
         </div>
     );
 }

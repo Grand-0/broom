@@ -4,13 +4,16 @@ import { RouteNames } from "../../routes/sources";
 
 import "./sidebar.scss";
 
-export function Sider() {
+type SiderProps = {
+    collapsed?: boolean;
+};
+
+export function Sider({ collapsed = false }: SiderProps) {
     return (
-        <div className="sidebar">
+        <div className={`sidebar${collapsed ? " collapsed" : ""}`}>
             <div className="logo">
-                {/*<img src="/icons/broom.svg" />*/}
                 <BroomIcon />
-                <h3>Broom</h3>
+                {!collapsed && <h3>Broom</h3>}
             </div>
 
             <div className="navigation">
@@ -18,13 +21,20 @@ export function Sider() {
                     icon={<BrandbookIcon />}
                     toPath={`/${RouteNames.BrandBook}`}
                     title="Brandbook"
+                    collapsed={collapsed}
                 />
                 <NavigationCard
                     icon={<SettingsIcon />}
                     toPath={`/${RouteNames.Settings}`}
                     title="Settings"
+                    collapsed={collapsed}
                 />
-                <NavigationCard icon={<InfoIcon />} toPath={`/${RouteNames.About}`} title="Info" />
+                <NavigationCard
+                    icon={<InfoIcon />}
+                    toPath={`/${RouteNames.About}`}
+                    title="Info"
+                    collapsed={collapsed}
+                />
             </div>
         </div>
     );
