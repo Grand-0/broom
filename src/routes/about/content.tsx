@@ -1,7 +1,6 @@
-export default function AboutContent() {
-    console.log(import.meta.env);
+export function AboutContent() {
     return (
-        <div className="about-content">
+        <div className="content">
             <div className="about-card">
                 <img src="/icons/broom.svg" />
                 <h1>Broom</h1>
