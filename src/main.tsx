@@ -1,10 +1,11 @@
-import React from "react";
+import React, { lazy } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./app";
-import "./styles.scss";
+import "./styles/styles.scss";
+
+const Scene = lazy(() => import("./scene"))
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <Scene />
   </React.StrictMode>,
 );

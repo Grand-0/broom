@@ -1,0 +1,179 @@
+@use "../../styles/variables" as shared;
+@use "../../styles/themes/main/variables" as *;
+
+.stand-card {
+    background: $bg-card;
+    border-radius: shared.$radius-md;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    &-header {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        gap: 12px;
+    }
+
+    &-main-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+
+        &.running {
+            background: $status-running;
+        }
+        &.stopped {
+            background: $status-stopped;
+        }
+    }
+
+    &-app-name {
+        font-family: shared.$font-family;
+        font-size: 14px;
+        font-weight: 500;
+        color: $accent;
+        width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-family: shared.$font-family;
+        font-size: 11px;
+        font-weight: 500;
+        color: $text-on-accent;
+
+        &.running {
+            background: $status-running;
+        }
+        &.stopped {
+            background: $status-stopped;
+        }
+    }
+
+    &-spacer {
+        flex: 1;
+        height: 1px;
+    }
+
+    &-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .control-btn {
+        border: none;
+        border-radius: 4px;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: opacity 0.15s;
+
+        &:hover {
+            opacity: 0.8;
+        }
+        &:active {
+            opacity: 0.6;
+        }
+
+        &.success {
+            background: $btn-success-bg;
+        }
+        &.danger {
+            background: $btn-danger-bg;
+        }
+        &.ghost {
+            background: $btn-ghost-bg;
+        }
+        &.destructive {
+            background: $btn-destructive-bg;
+        }
+    }
+
+    .collapse-arrow {
+        display: block;
+        color: $text-secondary;
+        transform: rotate(180deg);
+
+        &.collapsed {
+            transform: rotate(-90deg);
+        }
+    }
+
+    &-divider {
+        height: 1px;
+        background: $border;
+        width: 100%;
+        transition:
+            max-height 0.3s ease,
+            opacity 0.2s ease;
+        max-height: 1px;
+
+        &.hidden {
+            max-height: 0;
+            opacity: 0;
+        }
+    }
+
+    &-details {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: hidden;
+        max-height: 200px;
+        transition:
+            max-height 0.3s ease,
+            padding 0.3s ease,
+            opacity 0.2s ease;
+
+        &.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+        }
+    }
+
+    .detail-row {
+        display: flex;
+        gap: 24px;
+        width: 100%;
+    }
+
+    .detail-field {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .detail-label {
+        font-family: shared.$font-family;
+        font-size: 11px;
+        font-weight: 500;
+        color: $text-muted;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-family: shared.$font-family;
+        font-size: 13px;
+        color: $text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

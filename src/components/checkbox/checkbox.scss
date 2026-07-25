@@ -1,0 +1,43 @@
+@use "../../styles/variables" as shared;
+@use "../../styles/themes/main/variables" as *;
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+
+    &-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        background: $border;
+        flex-shrink: 0;
+        transition: background 0.15s ease;
+
+        &.checked {
+            background: $accent;
+        }
+    }
+
+    &-mark {
+        font-family: shared.$font-family;
+        font-size: 12px;
+        font-weight: bold;
+        color: $text-on-accent;
+        line-height: 1;
+    }
+
+    &-label {
+        font-family: shared.$font-family;
+        font-size: 13px;
+        font-weight: 500;
+        color: $text-primary;
+    }
+}

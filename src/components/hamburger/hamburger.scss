@@ -1,0 +1,28 @@
+@use "../../styles/themes/main/variables" as *;
+
+.hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: $text-secondary;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+    }
+
+    &:hover {
+        background: $hamburger-active-bg;
+    }
+
+    &.active {
+        background: $nav-item-active-bg;
+        color: $accent;
+    }
+}

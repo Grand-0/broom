@@ -1,0 +1,13 @@
+@use './styles/themes/main/variables' as *;
+
+.scene {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
+    overflow: hidden;
+    background-color: $bg-primary;
+    height: 100%;
+    width: 100%;
+}
