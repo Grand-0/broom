@@ -2,5 +2,6 @@ export enum RouteNames {
   BrandBook = "Brandbook",
   Settings = "Settings",
   About = "About",
-  CreateStand = "Create-stand"
+  CreateStand = "Create-stand",
+  Developing = "Developing"
 }

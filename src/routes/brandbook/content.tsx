@@ -1,11 +1,14 @@
 import { StandCard } from "../../components/stand-card";
 import { useStandsInfo } from "./hooks/use-get-stands-info";
 import { AdditionInfoContentPart } from "./addition-info";
-
-import "./brandbook.scss";
 import { IStandInfo } from "../../models";
 
+import "./brandbook.scss";
+import { useNavigate } from "react-router-dom";
+import { RouteNames } from "../sources";
+
 export function BrandBookContent() {
+    const navigate = useNavigate();
     const { result } = useStandsInfo();
 
     if (typeof result === "undefined") {
@@ -16,7 +19,12 @@ export function BrandBookContent() {
     return (
         <div className="content">
             <div className="brandbook-header">
-                <button className="add-stand-btn">
+                <button
+                    className="add-stand-btn"
+                    onClick={() => {
+                        navigate(`/${RouteNames.CreateStand}`);
+                    }}
+                >
                     <p>+ Add Stand</p>
                 </button>
             </div>
