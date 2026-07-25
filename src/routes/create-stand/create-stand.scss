@@ -1,0 +1,127 @@
+@use "../../styles/variables" as shared;
+@use "../../styles/themes/main/variables" as *;
+
+.create-stand-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border-radius: shared.$radius-md;
+    background: $bg-card;
+    width: calc(100% - 40px);
+}
+
+.create-stand-fields-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.create-stand-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+}
+
+.create-stand-divider {
+    height: 1px;
+    background: $border;
+    width: 100%;
+}
+
+.create-stand-additional-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    width: 100%;
+}
+
+.create-stand-additional-arrow {
+    font-family: shared.$font-family;
+    font-size: 14px;
+    color: $text-muted;
+    transition: transform 0.2s ease;
+
+    &.open {
+        transform: rotate(90deg);
+    }
+}
+
+.create-stand-additional-title {
+    font-family: shared.$font-family;
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-secondary;
+}
+
+.create-stand-additional-hint {
+    font-family: shared.$font-family;
+    font-size: 12px;
+    color: $text-muted;
+    flex: 1;
+    text-align: right;
+    transition: opacity 0.2s ease;
+
+    &.hidden {
+        opacity: 0;
+    }
+}
+
+.create-stand-additional-divider {
+    height: 1px;
+    background: $border;
+    width: 100%;
+}
+
+.create-stand-additional-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition:
+        max-height 0.3s ease,
+        opacity 0.2s ease;
+
+    &.open {
+        max-height: 300px;
+        opacity: 1;
+    }
+}
+
+.create-stand-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.create-stand-btn {
+    border: none;
+    border-radius: shared.$radius-sm;
+    padding: 10px 24px;
+    cursor: pointer;
+    font-family: shared.$font-family;
+    font-size: 14px;
+    font-weight: 500;
+
+    &-primary {
+        background: $accent;
+        color: $text-on-accent;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    &-ghost {
+        background: $btn-ghost-bg;
+        color: $text-secondary;
+    }
+}

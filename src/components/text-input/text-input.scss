@@ -1,0 +1,33 @@
+@use "../../styles/variables" as shared;
+@use "../../styles/themes/main/variables" as *;
+
+.text-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+
+    &-label {
+        font-family: shared.$font-family;
+        font-size: 13px;
+        font-weight: 500;
+        color: $text-primary;
+    }
+
+    &-field {
+        height: 20px;
+        padding: 12px;
+        border: none;
+        border-radius: shared.$radius-sm;
+        background: $input-bg;
+        font-family: shared.$font-family;
+        font-size: 14px;
+        color: $text-primary;
+        outline: none;
+        width: 100%;
+
+        &::placeholder {
+            color: $text-muted;
+        }
+    }
+}
