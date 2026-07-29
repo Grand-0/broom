@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+// ── Form data (get_create_stand_form_data) ──
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CreateStandFormData {
     pub collections: Vec<CollectionFormItem>,
@@ -29,4 +31,27 @@ pub struct VersionFormItem {
 pub struct StageFormItem {
     #[serde(rename = "stageName")]
     pub stage_name: String,
+}
+
+// ── Create stand request / response ──
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateStandRequest {
+    pub collection: String,
+    pub project: String,
+    pub version: String,
+    pub stage: String,
+    pub build_option: String,
+    pub build_version: String,
+    pub use_elastic: bool,
+    pub use_kafka: bool,
+    pub temp_files_path: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateStandResponse {
+    pub status: String,
+    pub log_path: Option<String>,
 }

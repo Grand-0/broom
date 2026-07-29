@@ -1,6 +1,8 @@
 mod api;
 pub mod constants;
 mod models;
+mod services;
+mod store;
 mod view_models;
 
 use std::fs;
@@ -24,6 +26,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            api::create_stand::create_stand,
             api::create_stand_form::get_create_stand_form_data,
             api::user_stands_info::get_user_stands_info
         ])

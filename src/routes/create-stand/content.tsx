@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { invoke } from "@tauri-apps/api/core";
 
 import { Dropdown } from "../../components/dropdown";
 import { RadioGroup } from "../../components/radio-button";
@@ -6,7 +8,8 @@ import { Checkbox } from "../../components/checkbox";
 import { TextInput } from "../../components/text-input";
 import { ErrorCard } from "../../components/error-card/error-card";
 
-import { ICreateStandRequisites } from "../../models";
+import { ICreateStandRequisites, ICreateStandRequest, ICreateStandResponse } from "../../models";
+import { RouteNames } from "../sources";
 
 import { useFormCreateStandStore } from "./stores/form";
 import { useLoadRequisites } from "./hooks/use-load-reqisites";
@@ -17,7 +20,6 @@ export function CreateStandContent() {
     const { requisites } = useLoadRequisites();
 
     if (typeof requisites === "undefined") {
-        // TODO: спиннер
         return <></>;
     }
 
@@ -37,6 +39,12 @@ export function CreateStandContent() {
 }
 
 function CreateStandContentInner({ requisites }: { requisites: ICreateStandRequisites }) {
+    const navigate = useNavigate();
+
+    const [additionalOpen, setAdditionalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
     const {
         collectionOptions,
         buildOptions,
@@ -64,14 +72,53 @@ function CreateStandContentInner({ requisites }: { requisites: ICreateStandRequi
         };
     }, []);
 
-    const [additionalOpen, setAdditionalOpen] = useState(false);
-
     const canSubmit =
         collectionOption &&
         projectOption &&
         versionOption &&
         stageOption &&
-        (buildOption === "latest" || buildVersion);
+        (buildOption === "latest" || buildVersion) &&
+        !submitting;
+
+    const handleSubmit = async () => {
+        if (!collectionOption || !projectOption || !versionOption || !stageOption) return;
+
+        setSubmitting(true);
+        setSubmitError(null);
+
+        const request: ICreateStandRequest = {
+            collection: collectionOption,
+            project: projectOption,
+            version: versionOption,
+            stage: stageOption,
+            buildOption,
+            buildVersion,
+            useElastic,
+            useKafka,
+            tempFilesPath: tempPath || undefined,
+        };
+
+        try {
+            const response = await invoke<ICreateStandResponse>("create_stand", { request });
+            if (response.status === "ok") {
+                navigate(`/${RouteNames.BrandBook}`);
+            } else {
+                const msg = response.logPath
+                    ? `Ошибка создания стенда. Лог: ${response.logPath}`
+                    : "Ошибка создания стенда";
+                setSubmitError(msg);
+            }
+        } catch (error: unknown) {
+            const msg = typeof error === "string" ? error : "Неизвестная ошибка";
+            setSubmitError(msg);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (submitError) {
+        return <ErrorCard message={submitError} />;
+    }
 
     return (
         <div className="create-stand-card">
@@ -188,12 +235,18 @@ function CreateStandContentInner({ requisites }: { requisites: ICreateStandRequi
             <div className="create-stand-actions">
                 <button
                     className="create-stand-btn create-stand-btn-primary"
-                    type="submit"
+                    type="button"
                     disabled={!canSubmit}
+                    onClick={handleSubmit}
                 >
-                    Create
+                    {submitting ? "Creating..." : "Create"}
                 </button>
-                <button className="create-stand-btn create-stand-btn-ghost" type="button">
+                <button
+                    className="create-stand-btn create-stand-btn-ghost"
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => navigate(`/${RouteNames.BrandBook}`)}
+                >
                     Cancel
                 </button>
             </div>
