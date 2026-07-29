@@ -1,18 +1,18 @@
 import "./radio-button.scss";
 
-type RadioOption = {
+export type RadioOption<T> = {
     label: string;
-    value: string;
+    value: T;
 };
 
-type RadioGroupProps = {
+type RadioGroupProps<T> = {
     label: string;
-    options: RadioOption[];
-    value?: string;
-    onChange?: (value: string) => void;
+    options: RadioOption<T>[];
+    value?: T;
+    onChange?: (value: T) => void;
 };
 
-export function RadioGroup({ label, options, value, onChange }: RadioGroupProps) {
+export function RadioGroup<T>({ label, options, value, onChange }: RadioGroupProps<T>) {
     return (
         <div className="radio-group">
             <span className="radio-label">{label}</span>
@@ -21,7 +21,7 @@ export function RadioGroup({ label, options, value, onChange }: RadioGroupProps)
                     const selected = opt.value === value;
                     return (
                         <button
-                            key={opt.value}
+                            key={`${opt.value}`}
                             className="radio-option"
                             onClick={() => onChange?.(opt.value)}
                             type="button"

@@ -6,14 +6,24 @@ import { IStandInfo } from "../../models";
 import "./brandbook.scss";
 import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../sources";
+import { ErrorCard } from "../../components/error-card/error-card";
 
 export function BrandBookContent() {
     const navigate = useNavigate();
+
     const { result } = useStandsInfo();
 
     if (typeof result === "undefined") {
         // TODO: спиннер
         return <></>;
+    }
+
+    if (result instanceof Error) {
+        return (
+            <div className="content">
+                <ErrorCard message={result.message} />{" "}
+            </div>
+        );
     }
 
     return (
@@ -33,11 +43,7 @@ export function BrandBookContent() {
     );
 }
 
-function BrandBookContentInner({ viewContent }: { viewContent: Error | IStandInfo[] }) {
-    if (viewContent instanceof Error) {
-        return <AdditionInfoContentPart errorMessage={viewContent.message} />;
-    }
-
+function BrandBookContentInner({ viewContent }: { viewContent: IStandInfo[] }) {
     return !!viewContent.length ? (
         <div className="brandbook-stand-list">
             {viewContent.map((s) => (

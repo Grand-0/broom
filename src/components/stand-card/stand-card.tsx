@@ -27,7 +27,7 @@ export function StandCard({ standInfo }: StandCardProps) {
                 <div className="stand-card-main-info">
                     {/* v2: status dot */}
                     {/* <div className={`status-dot ${isRunning ? "running" : "stopped"}`} /> */}
-                    <span className="stand-card-app-name">{standInfo.web_server_name}</span>
+                    <span className="stand-card-app-name">{standInfo.webServerName}</span>
                 </div>
 
                 {/* v2: status badge */}
@@ -59,19 +59,19 @@ export function StandCard({ standInfo }: StandCardProps) {
 
             <div className={`stand-card-details ${collapsed ? "collapsed" : ""}`}>
                 <div className="detail-row">
-                    <DetailField label="Server" value={standInfo.target_server_name} />
-                    <DetailField label="Account" value={standInfo.target_account} />
-                    <DetailField label="Directory" value={standInfo.instance_dir} />
+                    <DetailField label="Server" value={standInfo.targetServerName} />
+                    <DetailField label="Account" value={standInfo.targetAccount} />
+                    <DetailField label="Directory" value={standInfo.instanceDir} />
                 </div>
                 <div className="detail-row">
-                    <DetailField label="Instance" value={standInfo.app_name} />
-                    <DetailField label="Main Port" value={String(standInfo.port_a)} />
-                    <DetailField label="Secondary Port" value={String(standInfo.port_b)} />
+                    <DetailField label="Instance" value={standInfo.appName} />
+                    <DetailField label="Main Port" value={String(standInfo.portA)} />
+                    <DetailField label="Secondary Port" value={String(standInfo.portB)} />
                 </div>
                 <div className="detail-row">
-                    <DetailField label="DB Provider" value={standInfo.db_provider} />
-                    <DetailField label="DB Server" value={standInfo.db_server} />
-                    <DetailField label="SMB" value={standInfo.smb_server_address} />
+                    <DetailField label="DB Provider" value={standInfo.dbProvider} />
+                    <DetailField label="DB Server" value={standInfo.dbServer} />
+                    <DetailField label="SMB" value={standInfo.smbServerAddress} />
                 </div>
             </div>
         </div>

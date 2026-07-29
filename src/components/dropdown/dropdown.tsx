@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 
 import "./dropdown.scss";
 
-type DropdownOption = {
+export type DropdownOption = {
     label: string;
     value: string;
 };
@@ -26,7 +26,7 @@ export function Dropdown({ label, options, value, onChange, placeholder }: Dropd
             onChange?.(v);
             setOpen(false);
         },
-        [onChange],
+        [onChange]
     );
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export function Dropdown({ label, options, value, onChange, placeholder }: Dropd
             <span className="dropdown-label">{label}</span>
             <button className="dropdown-trigger" onClick={toggle} type="button">
                 <span className={`dropdown-value${selected ? "" : " placeholder"}`}>
-                    {selected ? selected.label : placeholder ?? "Выберите..."}
+                    {selected ? selected.label : (placeholder ?? "Select...")}
                 </span>
                 <span className={`dropdown-arrow ${open ? "open" : ""}`}>▲</span>
             </button>
@@ -58,7 +58,9 @@ export function Dropdown({ label, options, value, onChange, placeholder }: Dropd
                             type="button"
                         >
                             <span className="dropdown-option-text">{opt.label}</span>
-                            {opt.value === value && <span className="dropdown-option-check">✓</span>}
+                            {opt.value === value && (
+                                <span className="dropdown-option-check">✓</span>
+                            )}
                         </button>
                     ))}
                 </div>

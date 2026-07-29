@@ -1,0 +1,143 @@
+{
+    "collections": {
+        "Delo2020": {
+            "path_prefix": "_Delo2020-Collection2020",
+            "tfvs_collection_uri": "https://msktfs.eos.ru:8443/tfs/Collection2020/",
+            "tfvs_team_project": "Delo2020",
+            "stand_domain": "mr.loc",
+            "projects": {
+                "Delo2020": {
+                    "collection_path_suffix": "Delo2020",
+                    "default_instance_dir": "/opt/delo",
+                    "default_target_account": "root",
+                    "versions": {
+                        "26.2": {
+                            "configure_vm": {
+                                "dotnet": "8-repo 10-repo",
+                                "postgresql": "17-repo",
+                                "nginx": "repo",
+                                "elasticsearch": "7.15.0",
+                                "kafka": "2.13-3.2.0",
+                                "chromium": "repo",
+                                "samba": "repo",
+                                "caTrust": false,
+                                "keycloak": null
+                            },
+                            "deploy": {
+                                "db_provider": "PostgreSQL",
+                                "db_server": "localhost",
+                                "db_owner": "X262",
+                                "db_admin": "postgres",
+                                "create_db": "Recreate",
+                                "load_initial_data": "demo_csv_template",
+                                "reg_host": true
+                            },
+                            "stages": {
+                                "dev": {
+                                    "stand_prefix": "dev-stand"
+                                },
+                                "release": {
+                                    "stand_prefix": "release-stand"
+                                },
+                                "prod": {
+                                    "stand_prefix": "prod-stand"
+                                }
+                            }
+                        }
+                    }
+                },
+                "Delo202-GD": {
+                    "collection_path_suffix": "Delo2020-GD",
+                    "default_instance_dir": "/opt/delo_gd",
+                    "default_target_account": "root",
+                    "versions": {
+                        "25.3": {
+                            "configure_vm": {
+                                "dotnet": "8-repo 10-repo",
+                                "postgresql": "17-repo",
+                                "nginx": "repo",
+                                "elasticsearch": "7.15.0",
+                                "kafka": "2.13-3.2.0",
+                                "chromium": "repo",
+                                "samba": "repo",
+                                "caTrust": false,
+                                "keycloak": null
+                            },
+                            "deploy": {
+                                "db_provider": "PostgreSQL",
+                                "db_server": "localhost",
+                                "db_owner": "X253_GD",
+                                "db_admin": "postgres",
+                                "create_db": "Recreate",
+                                "load_initial_data": "demo_csv_template",
+                                "reg_host": true
+                            },
+                            "stages": {
+                                "dev": {
+                                    "stand_prefix": "dev-stand"
+                                },
+                                "release": {
+                                    "stand_prefix": "release-stand"
+                                },
+                                "prod": {
+                                    "stand_prefix": "prod-stand"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Archive2020": {
+            "path_prefix": "_Archive2020-Collection2020",
+            "tfvs_collection_uri": "https://msktfs.eos.ru:8443/tfs/Collection2020/",
+            "tfvs_team_project": "Archive2020",
+            "stand_domain": "mr.loc",
+            "projects": {
+                "Archive2020": {
+                    "collection_path_suffix": "Archive2020",
+                    "default_instance_dir": "/opt/archive",
+                    "default_target_account": "root",
+                    "versions": {
+                        "1.0": {
+                            "configure_vm": {
+                                "dotnet": "8-repo",
+                                "postgresql": "15-repo",
+                                "nginx": "repo",
+                                "elasticsearch": null,
+                                "kafka": null,
+                                "chromium": null,
+                                "samba": null,
+                                "caTrust": false,
+                                "keycloak": null
+                            },
+                            "deploy": {
+                                "db_provider": "PostgreSQL",
+                                "db_server": "localhost",
+                                "db_owner": "archive_owner",
+                                "db_admin": "postgres",
+                                "create_db": "Recreate",
+                                "load_initial_data": null,
+                                "reg_host": true
+                            },
+                            "stages": {
+                                "dev": {
+                                    "stand_prefix": "dev-stand"
+                                },
+                                "release": {
+                                    "stand_prefix": "release-stand"
+                                },
+                                "prod": {
+                                    "stand_prefix": "prod-stand"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "defaults": {
+        "temp_files_path": "$env:TEMP\\deploy_stand"
+    }
+}

@@ -1,3 +1,3 @@
-import { CreatestandContent } from "./content";
+import { CreateStandContent } from "./content";
 
-export default CreatestandContent;
+export default CreateStandContent;
