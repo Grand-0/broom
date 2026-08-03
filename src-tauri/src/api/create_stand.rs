@@ -319,3 +319,347 @@ fn push_arg(args: &mut Vec<String>, name: &str, value: &str) {
     args.push(name.to_string());
     args.push(value.to_string());
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{build_configure_vm_args, build_deploy_args};
+    use crate::models::collection::{
+        Collection, CollectionsConfig, ConfigureVm, DeployParams, Defaults, Project, Stage, Version,
+    };
+    use crate::services::collections_config::{self, ResolvedConfig};
+    use crate::services::stand_params::{self, StandContext};
+    use std::collections::HashMap;
+    use std::path::PathBuf;
+
+    fn load_config() -> CollectionsConfig {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/collections.json");
+        let content = std::fs::read_to_string(&path).expect("collections.json должен читаться");
+        serde_json::from_str(&content).expect("collections.json должен парситься")
+    }
+
+    fn delo_entities<'a>(config: &'a CollectionsConfig) -> (&'a Collection, &'a Project, &'a Stage) {
+        let collection = config.collections.get("Delo2020").unwrap();
+        let project = collection.projects.get("Delo2020").unwrap();
+        let stage = project
+            .versions
+            .get("26.2")
+            .unwrap()
+            .stages
+            .get("dev")
+            .unwrap();
+        (collection, project, stage)
+    }
+
+    fn delo_ctx(config: &CollectionsConfig, stand_id: &str) -> (StandContext, ResolvedConfig) {
+        let (collection, project, stage) = delo_entities(config);
+        let resolved = collections_config::resolve(
+            config,
+            "Delo2020",
+            "Delo2020",
+            "26.2",
+            "dev",
+            "20230403.53",
+            true,
+            true,
+            None,
+        )
+        .unwrap();
+        let ctx = stand_params::generate_stand_context(
+            "Delo2020",
+            collection,
+            "Delo2020",
+            project,
+            stage,
+            "26.2",
+            stand_id,
+        );
+        (ctx, resolved)
+    }
+
+    #[test]
+    fn script_path_is_built_from_config_and_build() {
+        let config = load_config();
+        let resolved = collections_config::resolve(
+            &config,
+            "Delo2020",
+            "Delo2020",
+            "26.2",
+            "dev",
+            "20230403.53",
+            true,
+            true,
+            None,
+        )
+        .unwrap();
+
+        assert_eq!(
+            resolved.script_path,
+            r"\\tfbd\storage\_Delo2020-Collection2020\Delo2020\dev-stand-26.2\20230403.53\BuildResult"
+        );
+        assert_eq!(resolved.temp_files_path, "$env:TEMP\\deploy_stand");
+    }
+
+    #[test]
+    fn deploy_args_match_resolved_config_and_context() {
+        let config = load_config();
+        let (ctx, resolved) = delo_ctx(&config, "1");
+
+        assert_eq!(ctx.web_server_name, "dev-stand-26.2-1.mr.loc");
+        assert_eq!(ctx.app_name, "delo2020_262-1");
+        assert_eq!(ctx.instance_dir, "/opt/delo");
+        assert_eq!(ctx.port_a, 10001);
+        assert_eq!(ctx.port_b, 10002);
+
+        let args = build_deploy_args(&ctx, &resolved);
+        let expected = vec![
+            "-TargetServerName".to_string(),
+            ctx.target_server_name.clone(),
+            "-InstanceDir".to_string(),
+            "/opt/delo".to_string(),
+            "-AppName".to_string(),
+            ctx.app_name.clone(),
+            "-DBProvider".to_string(),
+            "PostgreSQL".to_string(),
+            "-DBServer".to_string(),
+            "localhost".to_string(),
+            "-DBAdmin".to_string(),
+            "postgres".to_string(),
+            "-DBOwner".to_string(),
+            "X262".to_string(),
+            "-CreateDB".to_string(),
+            "Recreate".to_string(),
+            "-LoadInitialData".to_string(),
+            "demo_csv_template".to_string(),
+            "-WebServerName".to_string(),
+            ctx.web_server_name.clone(),
+            "-RegHost".to_string(),
+            "-PortA".to_string(),
+            "10001".to_string(),
+            "-PortB".to_string(),
+            "10002".to_string(),
+            "-SmbServerAddress".to_string(),
+            ctx.smb_server_address.clone(),
+            "-TempFilesPath".to_string(),
+            "$env:TEMP\\deploy_stand".to_string(),
+        ];
+        assert_eq!(args, expected);
+    }
+
+    #[test]
+    fn deploy_args_omit_load_initial_data_when_null() {
+        let config = load_config();
+        let collection = config.collections.get("Archive2020").unwrap();
+        let project = collection.projects.get("Archive2020").unwrap();
+        let stage = project
+            .versions
+            .get("1.0")
+            .unwrap()
+            .stages
+            .get("dev")
+            .unwrap();
+        let resolved = collections_config::resolve(
+            &config,
+            "Archive2020",
+            "Archive2020",
+            "1.0",
+            "dev",
+            "20230403.53",
+            false,
+            false,
+            None,
+        )
+        .unwrap();
+        let ctx = stand_params::generate_stand_context(
+            "Archive2020",
+            collection,
+            "Archive2020",
+            project,
+            stage,
+            "1.0",
+            "1",
+        );
+        let args = build_deploy_args(&ctx, &resolved);
+
+        assert!(!args.iter().any(|a| a == "-LoadInitialData"));
+    }
+
+    #[test]
+    fn deploy_args_omit_reg_host_when_false() {
+        for (config, expect_host) in [(synthetic_config(true), true), (synthetic_config(false), false)]
+        {
+            let collection = config.collections.get("Coll").unwrap();
+            let project = collection.projects.get("Proj").unwrap();
+            let stage = project
+                .versions
+                .get("1.0")
+                .unwrap()
+                .stages
+                .get("dev")
+                .unwrap();
+            let resolved = collections_config::resolve(
+                &config,
+                "Coll",
+                "Proj",
+                "1.0",
+                "dev",
+                "b1",
+                true,
+                true,
+                None,
+            )
+            .unwrap();
+            let ctx = stand_params::generate_stand_context(
+                "Coll",
+                collection,
+                "Proj",
+                project,
+                stage,
+                "1.0",
+                "1",
+            );
+            let args = build_deploy_args(&ctx, &resolved);
+
+            assert_eq!(
+                args.iter().any(|a| a == "-RegHost"),
+                expect_host,
+                "ожидалось -RegHost={}",
+                expect_host
+            );
+        }
+    }
+
+    #[test]
+    fn configure_vm_args_follow_use_elastic_and_use_kafka() {
+        let config = load_config();
+
+        let with = collections_config::resolve(
+            &config,
+            "Delo2020",
+            "Delo2020",
+            "26.2",
+            "dev",
+            "b",
+            true,
+            true,
+            None,
+        )
+        .unwrap();
+        let args = build_configure_vm_args(&with.configure_vm);
+        assert!(args.iter().any(|a| a == "-Dotnet"));
+        assert!(args.iter().any(|a| a == "8-repo 10-repo"));
+        assert!(args.iter().any(|a| a == "-Postgresql"));
+        assert!(args.iter().any(|a| a == "17-repo"));
+        assert!(args.iter().any(|a| a == "-Nginx"));
+        assert!(args.iter().any(|a| a == "-Chromium"));
+        assert!(args.iter().any(|a| a == "-Samba"));
+        assert!(args.iter().any(|a| a == "-Elasticsearch"));
+        assert!(args.iter().any(|a| a == "7.15.0"));
+        assert!(args.iter().any(|a| a == "-Kafka"));
+        assert!(args.iter().any(|a| a == "2.13-3.2.0"));
+        assert!(!args.iter().any(|a| a == "-CaTrust"));
+        assert!(!args.iter().any(|a| a == "-Keycloak"));
+
+        let without = collections_config::resolve(
+            &config,
+            "Delo2020",
+            "Delo2020",
+            "26.2",
+            "dev",
+            "b",
+            false,
+            false,
+            None,
+        )
+        .unwrap();
+        let args = build_configure_vm_args(&without.configure_vm);
+        assert!(!args.iter().any(|a| a == "-Elasticsearch"));
+        assert!(!args.iter().any(|a| a == "-Kafka"));
+    }
+
+    #[test]
+    fn full_command_line_matches_expected_shape() {
+        let config = load_config();
+        let (ctx, resolved) = delo_ctx(&config, "1");
+        let args = build_deploy_args(&ctx, &resolved);
+
+        let line = format!(
+            "powershell.exe -NoProfile -File {}\\deploy_linux.ps1 {}",
+            resolved.script_path,
+            args.join(" ")
+        );
+        let expected = format!(
+            "powershell.exe -NoProfile -File \\\\tfbd\\storage\\_Delo2020-Collection2020\\Delo2020\\dev-stand-26.2\\20230403.53\\BuildResult\\deploy_linux.ps1 -TargetServerName {} -InstanceDir /opt/delo -AppName {} -DBProvider PostgreSQL -DBServer localhost -DBAdmin postgres -DBOwner X262 -CreateDB Recreate -LoadInitialData demo_csv_template -WebServerName {} -RegHost -PortA 10001 -PortB 10002 -SmbServerAddress {} -TempFilesPath $env:TEMP\\deploy_stand",
+            ctx.target_server_name,
+            ctx.app_name,
+            ctx.web_server_name,
+            ctx.smb_server_address
+        );
+        assert_eq!(line, expected);
+    }
+
+    fn synthetic_config(reg_host: bool) -> CollectionsConfig {
+        let configure_vm = ConfigureVm {
+            dotnet: "dotnet-repo".to_string(),
+            postgresql: "pg-repo".to_string(),
+            nginx: "nginx-repo".to_string(),
+            elasticsearch: None,
+            kafka: None,
+            chromium: None,
+            samba: None,
+            ca_trust: false,
+            keycloak: None,
+        };
+        let deploy = DeployParams {
+            db_provider: "PostgreSQL".to_string(),
+            db_server: "localhost".to_string(),
+            db_owner: "owner".to_string(),
+            db_admin: "admin".to_string(),
+            create_db: "Create".to_string(),
+            load_initial_data: None,
+            reg_host,
+        };
+        let mut stages = HashMap::new();
+        stages.insert(
+            "dev".to_string(),
+            Stage {
+                stand_prefix: "dev-stand".to_string(),
+            },
+        );
+        let mut versions = HashMap::new();
+        versions.insert(
+            "1.0".to_string(),
+            Version {
+                configure_vm,
+                deploy,
+                stages,
+            },
+        );
+        let mut projects = HashMap::new();
+        projects.insert(
+            "Proj".to_string(),
+            Project {
+                collection_path_suffix: "Suffix".to_string(),
+                default_instance_dir: "/opt/demo".to_string(),
+                default_target_account: "root".to_string(),
+                versions,
+            },
+        );
+        let mut collections = HashMap::new();
+        collections.insert(
+            "Coll".to_string(),
+            Collection {
+                path_prefix: "_Prefix".to_string(),
+                tfvs_collection_uri: "https://tfs.example/".to_string(),
+                tfvs_team_project: "TP".to_string(),
+                stand_domain: "loc.test".to_string(),
+                projects,
+            },
+        );
+        CollectionsConfig {
+            collections,
+            defaults: Defaults {
+                temp_files_path: "$env:TEMP\\deploy_test".to_string(),
+            },
+        }
+    }
+}

@@ -1,19 +1,12 @@
 use crate::models::CollectionsConfig;
+use crate::services::collections_config;
 use crate::view_models::{
     CollectionFormItem, CreateStandFormData, ProjectFormItem, StageFormItem, VersionFormItem,
 };
-use tauri::Manager;
 
 #[tauri::command]
 pub fn get_create_stand_form_data(app: tauri::AppHandle) -> Result<CreateStandFormData, String> {
-    let resource_path = app.path().resource_dir().map_err(|e| e.to_string())?;
-    let collections_path = resource_path.join("resources/collections.json");
-
-    let file_content = std::fs::read_to_string(&collections_path)
-        .map_err(|e| format!("Ошибка чтения collections.json: {}", e))?;
-
-    let config: CollectionsConfig = serde_json::from_str(&file_content)
-        .map_err(|e| format!("Ошибка парсинга collections.json: {}", e))?;
+    let config: CollectionsConfig = collections_config::load_from_resources(&app)?;
 
     let collections: Vec<CollectionFormItem> = config
         .collections
