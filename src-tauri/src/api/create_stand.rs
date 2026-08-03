@@ -123,7 +123,10 @@ async fn resolve_build(
     request: &CreateStandRequest,
 ) -> Result<String, String> {
     if request.build_option != "latest" {
-        return Ok(request.build_version.clone());
+        return request
+            .build_version
+            .clone()
+            .ok_or_else(|| "build_version обязателен, если build_option не latest".into());
     }
 
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -157,7 +160,11 @@ async fn resolve_build(
     let logs_dir = app_data_dir.join("logs");
     let _ = std::fs::create_dir_all(&logs_dir);
 
-    let output = Command::new("powershell.exe")
+    let powershell = std::env::var("SystemRoot")
+        .map(|root| format!("{}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", root))
+        .unwrap_or_else(|_| "powershell.exe".into());
+
+    let output = Command::new(&powershell)
         .arg("-NoProfile")
         .arg("-Command")
         .arg(&ps_command)

@@ -43,7 +43,7 @@ pub struct CreateStandRequest {
     pub version: String,
     pub stage: String,
     pub build_option: String,
-    pub build_version: String,
+    pub build_version: Option<String>,
     pub use_elastic: bool,
     pub use_kafka: bool,
     pub temp_files_path: Option<String>,
