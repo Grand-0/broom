@@ -10,7 +10,19 @@ export interface ICreateStandRequest {
     tempFilesPath?: string;
 }
 
+export type ILogType = "session" | "operation";
+
+export interface ILogInfo {
+    logType: ILogType;
+    logName: string;
+}
+
 export interface ICreateStandResponse {
     status: string;
-    logPath?: string | null;
+    logInfo?: ILogInfo | null;
+}
+
+export interface ICreateStandError {
+    errorMsg: string;
+    logInfo?: ILogInfo | null;
 }

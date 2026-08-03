@@ -8,13 +8,20 @@ import { Checkbox } from "../../components/checkbox";
 import { TextInput } from "../../components/text-input";
 import { ErrorCard } from "../../components/error-card/error-card";
 
-import { ICreateStandRequisites, ICreateStandRequest, ICreateStandResponse } from "../../models";
+import {
+    ICreateStandRequisites,
+    ICreateStandRequest,
+    ICreateStandResponse,
+    ILogInfo,
+} from "../../models";
+
 import { RouteNames } from "../sources";
 
 import { useFormCreateStandStore } from "./stores/form";
 import { useLoadRequisites } from "./hooks/use-load-reqisites";
 
 import "./create-stand.scss";
+import { createSubmitError, SubmitError } from "./helpers";
 
 export function CreateStandContent() {
     const { requisites } = useLoadRequisites();
@@ -43,7 +50,7 @@ function CreateStandContentInner({ requisites }: { requisites: ICreateStandRequi
 
     const [additionalOpen, setAdditionalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<SubmitError | null>(null);
 
     const {
         collectionOptions,
@@ -100,24 +107,46 @@ function CreateStandContentInner({ requisites }: { requisites: ICreateStandRequi
 
         try {
             const response = await invoke<ICreateStandResponse>("create_stand", { request });
+
             if (response.status === "ok") {
                 navigate(`/${RouteNames.BrandBook}`);
-            } else {
-                const msg = response.logPath
-                    ? `Ошибка создания стенда. Лог: ${response.logPath}`
-                    : "Ошибка создания стенда";
-                setSubmitError(msg);
+                return;
             }
+
+            setSubmitError({
+                message: "Ошибка создания стенда",
+                logInfo: response.logInfo ?? null,
+            });
         } catch (error: unknown) {
-            const msg = typeof error === "string" ? error : "Неизвестная ошибка";
-            setSubmitError(msg);
+            setSubmitError(createSubmitError(error));
         } finally {
             setSubmitting(false);
         }
     };
 
+    const handleOpenLog = async (logInfo: ILogInfo) => {
+        try {
+            await invoke("open_log", { logInfo });
+        } catch (error: unknown) {
+            setSubmitError(createSubmitError(error));
+        }
+    };
+
     if (submitError) {
-        return <ErrorCard message={submitError} />;
+        return (
+            <ErrorCard
+                message={submitError.message}
+                action={
+                    submitError.logInfo
+                        ? {
+                              label: "Показать информацию об ошибке",
+                              fileName: submitError.logInfo.logName,
+                              onClick: () => handleOpenLog(submitError.logInfo as ILogInfo),
+                          }
+                        : undefined
+                }
+            />
+        );
     }
 
     return (

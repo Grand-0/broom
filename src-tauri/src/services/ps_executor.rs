@@ -164,7 +164,7 @@ fn run(
             ExecutionResult {
                 success,
                 log_path: log_path.to_string_lossy().to_string(),
-                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stdout: decode_output(&output.stdout),
             }
         }
         Err(e) => {
@@ -204,6 +204,16 @@ fn run(
     }
 }
 
+fn decode_output(bytes: &[u8]) -> String {
+    match std::str::from_utf8(bytes) {
+        Ok(s) => s.to_string(),
+        Err(_) => encoding_rs::IBM866
+            .decode_without_bom_handling_and_without_replacement(bytes)
+            .map(|decoded| decoded.into_owned())
+            .unwrap_or_else(|| String::from_utf8_lossy(bytes).into_owned()),
+    }
+}
+
 fn build_output_block(operation: &str, stand_name: &str, output: &Output) -> String {
     let mut block = format!(
         "[{}] Step: {} ({})\n",
@@ -216,7 +226,7 @@ fn build_output_block(operation: &str, stand_name: &str, output: &Output) -> Str
         block.push_str(&format!(
             "[{}] stdout:\n{}\n",
             logging::message_timestamp(),
-            String::from_utf8_lossy(&output.stdout)
+            decode_output(&output.stdout)
         ));
     }
 
@@ -224,7 +234,7 @@ fn build_output_block(operation: &str, stand_name: &str, output: &Output) -> Str
         block.push_str(&format!(
             "[{}] stderr:\n{}\n",
             logging::message_timestamp(),
-            String::from_utf8_lossy(&output.stderr)
+            decode_output(&output.stderr)
         ));
     }
 
@@ -250,5 +260,22 @@ fn write_log(log_path: &Path, content: &str, append: bool) {
 
     if let Err(e) = result {
         log::warn!("Не удалось записать лог {}: {}", log_path.display(), e);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decode_output_passes_through_utf8() {
+        assert_eq!(decode_output(b"plain ascii"), "plain ascii");
+        assert_eq!(decode_output("Привет".as_bytes()), "Привет");
+    }
+
+    #[test]
+    fn decode_output_decodes_cp866() {
+        let cp866 = [0x8F, 0xE0, 0xA8, 0xA2, 0xA5, 0xE2];
+        assert_eq!(decode_output(&cp866), "Привет");
     }
 }

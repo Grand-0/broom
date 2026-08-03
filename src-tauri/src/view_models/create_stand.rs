@@ -53,5 +53,35 @@ pub struct CreateStandRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateStandResponse {
     pub status: String,
-    pub log_path: Option<String>,
+    pub log_info: Option<LogInfo>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum LogType {
+    Session,
+    Operation,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogInfo {
+    pub log_type: LogType,
+    pub log_name: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateStandError {
+    pub error_msg: String,
+    pub log_info: Option<LogInfo>,
+}
+
+impl CreateStandError {
+    pub fn simple(message: impl Into<String>) -> Self {
+        Self {
+            error_msg: message.into(),
+            log_info: None,
+        }
+    }
 }

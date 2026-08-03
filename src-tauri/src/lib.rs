@@ -37,6 +37,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             api::create_stand::create_stand,
             api::create_stand_form::get_create_stand_form_data,
+            api::logs::open_log,
             api::user_stands_info::get_user_stands_info
         ])
         .run(tauri::generate_context!())

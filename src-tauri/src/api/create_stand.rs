@@ -5,29 +5,23 @@ use tauri::Manager;
 use crate::models::collection::{Collection, ConfigureVm, Project, Stage};
 use crate::services::{collections_config, ps_executor, stand_params, vm_operations};
 use crate::store::{stand_id_generator, stands_store};
-use crate::view_models::{CreateStandRequest, CreateStandResponse, StandInfo};
+use crate::view_models::{
+    CreateStandError, CreateStandRequest, CreateStandResponse, LogInfo, LogType, StandInfo,
+};
 
 #[tauri::command]
 pub fn create_stand(
     app: tauri::AppHandle,
     request: CreateStandRequest,
-) -> Result<CreateStandResponse, String> {
+) -> Result<CreateStandResponse, CreateStandError> {
     let result = run_create_stand(&app, &request);
 
     match &result {
-        Ok(response) if response.status == "ok" => {
-            log::info!("create_stand finished: status=ok");
-        }
-        Ok(response) => {
-            log::warn!(
-                "create_stand finished: status={} log={:?}",
-                response.status,
-                response.log_path
-            );
-        }
-        Err(e) => {
-            log::error!("create_stand failed: {}", e);
-        }
+        Ok(_) => log::info!("create_stand finished: status=ok"),
+        Err(e) => log::warn!(
+            "create_stand finished: status=fail error={}",
+            e.error_msg
+        ),
     }
 
     result
@@ -36,8 +30,11 @@ pub fn create_stand(
 fn run_create_stand(
     app: &tauri::AppHandle,
     request: &CreateStandRequest,
-) -> Result<CreateStandResponse, String> {
-    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+) -> Result<CreateStandResponse, CreateStandError> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| CreateStandError::simple(format!("Не удалось определить каталог данных: {}", e)))?;
 
     log::info!(
         "create_stand started: collection={} project={} version={} stage={} build_option={}",
@@ -49,28 +46,28 @@ fn run_create_stand(
     );
 
     // 1. Load collections config
-    let config = collections_config::load_from_resources(app)?;
+    let config = collections_config::load_from_resources(app).map_err(CreateStandError::simple)?;
 
     // 2. Look up model entities
     let collection = config
         .collections
         .get(&request.collection)
-        .ok_or_else(|| format!("Коллекция {} не найдена", request.collection))?;
+        .ok_or_else(|| CreateStandError::simple(format!("Коллекция {} не найдена", request.collection)))?;
     let project = collection
         .projects
         .get(&request.project)
-        .ok_or_else(|| format!("Проект {} не найден", request.project))?;
+        .ok_or_else(|| CreateStandError::simple(format!("Проект {} не найден", request.project)))?;
     let version = project
         .versions
         .get(&request.version)
-        .ok_or_else(|| format!("Версия {} не найдена", request.version))?;
+        .ok_or_else(|| CreateStandError::simple(format!("Версия {} не найдена", request.version)))?;
     let stage = version
         .stages
         .get(&request.stage)
-        .ok_or_else(|| format!("Стадия {} не найдена", request.stage))?;
+        .ok_or_else(|| CreateStandError::simple(format!("Стадия {} не найдена", request.stage)))?;
 
     // 3. Generate stand ID
-    let stand_id = stand_id_generator::generate_id(&app_data_dir)?;
+    let stand_id = stand_id_generator::generate_id(&app_data_dir).map_err(CreateStandError::simple)?;
 
     // 4. Generate stand context (names, ports, etc.)
     let ctx = stand_params::generate_stand_context(
@@ -136,7 +133,8 @@ fn run_create_stand(
         request.use_elastic,
         request.use_kafka,
         request.temp_files_path.clone(),
-    )?;
+    )
+    .map_err(CreateStandError::simple)?;
 
     // 8. Create VM
     ps_executor::append_log_line(&client_log, "step: create_vm (New-VM)");
@@ -144,7 +142,10 @@ fn run_create_stand(
         Ok(_) => ps_executor::append_log_line(&client_log, "create_vm: ok"),
         Err(e) => {
             ps_executor::append_log_line(&client_log, &format!("create_vm: failed: {}", e));
-            return Err(e);
+            return Err(CreateStandError {
+                error_msg: "Создание виртуальной машины завершилось с ошибкой.".to_string(),
+                log_info: Some(session_log_info(&client_log)),
+            });
         }
     }
 
@@ -160,9 +161,9 @@ fn run_create_stand(
         Some(&client_log),
     );
     if !configure_result.success {
-        return Ok(CreateStandResponse {
-            status: "fail".to_string(),
-            log_path: Some(client_log.to_string_lossy().to_string()),
+        return Err(CreateStandError {
+            error_msg: "Настройка виртуальной машины (configure_vm) завершилась с ошибкой.".to_string(),
+            log_info: Some(session_log_info(&client_log)),
         });
     }
 
@@ -178,9 +179,9 @@ fn run_create_stand(
         Some(&client_log),
     );
     if !deploy_result.success {
-        return Ok(CreateStandResponse {
-            status: "fail".to_string(),
-            log_path: Some(client_log.to_string_lossy().to_string()),
+        return Err(CreateStandError {
+            error_msg: "Развёртывание приложения (deploy) завершилось с ошибкой.".to_string(),
+            log_info: Some(session_log_info(&client_log)),
         });
     }
 
@@ -201,15 +202,29 @@ fn run_create_stand(
         smb_server_address: ctx.smb_server_address,
     };
 
-    stands_store::add_stand(&app_data_dir, stand_info)?;
+    stands_store::add_stand(&app_data_dir, stand_info).map_err(|e| CreateStandError {
+        error_msg: e,
+        log_info: Some(session_log_info(&client_log)),
+    })?;
 
     log::info!("create_stand: stand saved: {}", stand_name);
     ps_executor::append_log_line(&client_log, "stand saved");
 
     Ok(CreateStandResponse {
         status: "ok".to_string(),
-        log_path: Some(client_log.to_string_lossy().to_string()),
+        log_info: Some(session_log_info(&client_log)),
     })
+}
+
+fn session_log_info(log_path: &Path) -> LogInfo {
+    LogInfo {
+        log_type: LogType::Session,
+        log_name: log_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string(),
+    }
 }
 
 fn resolve_build(
@@ -220,15 +235,18 @@ fn resolve_build(
     stage: &Stage,
     stand_name: &str,
     client_log: &Path,
-) -> Result<String, String> {
+) -> Result<String, CreateStandError> {
     if request.build_option != "latest" {
         return request
             .build_version
             .clone()
-            .ok_or_else(|| "build_version обязателен, если build_option не latest".into());
+            .ok_or_else(|| CreateStandError::simple("build_version обязателен, если build_option не latest"));
     }
 
-    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| CreateStandError::simple(format!("Не удалось определить каталог данных: {}", e)))?;
 
     let ps_command = format!(
         "CI-Get-LastLocation -CollectionUri {} -TeamProject {} -BuildDefinition \\{} -BranchName {}/{}",
@@ -250,10 +268,10 @@ fn resolve_build(
     if result.success {
         Ok(result.stdout.trim().to_string())
     } else {
-        Err(format!(
-            "CI-Get-LastLocation завершился с ошибкой. Лог: {}",
-            result.log_path
-        ))
+        Err(CreateStandError {
+            error_msg: "CI-Get-LastLocation завершился с ошибкой.".to_string(),
+            log_info: Some(session_log_info(client_log)),
+        })
     }
 }
 
