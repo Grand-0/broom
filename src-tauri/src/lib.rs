@@ -8,11 +8,18 @@ mod view_models;
 use std::fs;
 use tauri::Manager;
 
+use crate::services::{log_cleanup, logging};
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let path = app.path().app_data_dir().map_err(|e| e.to_string())?;
+
+            logging::install_panic_hook();
+            logging::init(&path)?;
+            log_cleanup::start_daily_cleanup(path.clone());
+
             let config_path = path.join("stands_info.json");
 
             if !config_path.exists() {
@@ -21,6 +28,8 @@ pub fn run() {
                 }
                 fs::write(&config_path, "[]")?;
             }
+
+            log::info!("broom started");
 
             Ok(())
         })

@@ -1,42 +1,57 @@
-use std::process::Command;
+use std::path::Path;
 
 use tauri::Manager;
 
-use crate::models::collection::ConfigureVm;
+use crate::models::collection::{Collection, ConfigureVm, Project, Stage};
 use crate::services::{collections_config, ps_executor, stand_params, vm_operations};
 use crate::store::{stand_id_generator, stands_store};
 use crate::view_models::{CreateStandRequest, CreateStandResponse, StandInfo};
 
 #[tauri::command]
-pub async fn create_stand(
+pub fn create_stand(
     app: tauri::AppHandle,
     request: CreateStandRequest,
 ) -> Result<CreateStandResponse, String> {
+    let result = run_create_stand(&app, &request);
+
+    match &result {
+        Ok(response) if response.status == "ok" => {
+            log::info!("create_stand finished: status=ok");
+        }
+        Ok(response) => {
+            log::warn!(
+                "create_stand finished: status={} log={:?}",
+                response.status,
+                response.log_path
+            );
+        }
+        Err(e) => {
+            log::error!("create_stand failed: {}", e);
+        }
+    }
+
+    result
+}
+
+fn run_create_stand(
+    app: &tauri::AppHandle,
+    request: &CreateStandRequest,
+) -> Result<CreateStandResponse, String> {
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
 
+    log::info!(
+        "create_stand started: collection={} project={} version={} stage={} build_option={}",
+        request.collection,
+        request.project,
+        request.version,
+        request.stage,
+        request.build_option
+    );
+
     // 1. Load collections config
-    let config = collections_config::load_from_resources(&app)?;
+    let config = collections_config::load_from_resources(app)?;
 
-    // 2. Resolve build version
-    let build = resolve_build(&app, &config, &request).await?;
-
-    // 3. Resolve deployment params
-    let resolved = collections_config::resolve(
-        &config,
-        &request.collection,
-        &request.project,
-        &request.version,
-        &request.stage,
-        &build,
-        request.use_elastic,
-        request.use_kafka,
-        request.temp_files_path,
-    )?;
-
-    // 4. Generate stand ID
-    let stand_id = stand_id_generator::generate_id(&app_data_dir)?;
-
-    // 5. Look up model entities for context generation
+    // 2. Look up model entities
     let collection = config
         .collections
         .get(&request.collection)
@@ -54,7 +69,10 @@ pub async fn create_stand(
         .get(&request.stage)
         .ok_or_else(|| format!("Стадия {} не найдена", request.stage))?;
 
-    // 6. Generate stand context (names, ports, etc.)
+    // 3. Generate stand ID
+    let stand_id = stand_id_generator::generate_id(&app_data_dir)?;
+
+    // 4. Generate stand context (names, ports, etc.)
     let ctx = stand_params::generate_stand_context(
         &request.collection,
         collection,
@@ -64,39 +82,110 @@ pub async fn create_stand(
         &request.version,
         &stand_id,
     );
+    log::info!(
+        "create_stand: stand={} app={} ports={}/{}",
+        ctx.web_server_name,
+        ctx.app_name,
+        ctx.port_a,
+        ctx.port_b
+    );
 
-    // 7. Create VM
-    vm_operations::create_vm(&app_data_dir, &ctx.web_server_name)?;
+    // 5. Create per-call client log (named by the stand being created)
+    let client_log =
+        ps_executor::session_log_path(&app_data_dir, "create_stand", &ctx.web_server_name);
+    ps_executor::append_log_line(
+        &client_log,
+        &format!(
+            "create_stand started: collection={} project={} version={} stage={} build_option={}",
+            request.collection,
+            request.project,
+            request.version,
+            request.stage,
+            request.build_option
+        ),
+    );
+    ps_executor::append_log_line(
+        &client_log,
+        &format!(
+            "stand id: {} | stand: {} | app: {} | ports: {}/{}",
+            stand_id, ctx.web_server_name, ctx.app_name, ctx.port_a, ctx.port_b
+        ),
+    );
 
-    // 8. Run configure_vm.ps1
+    // 6. Resolve build version
+    let build = resolve_build(
+        app,
+        request,
+        collection,
+        project,
+        stage,
+        &ctx.web_server_name,
+        &client_log,
+    )?;
+    log::info!("create_stand: build resolved: {}", build);
+    ps_executor::append_log_line(&client_log, &format!("build resolved: {}", build));
+
+    // 7. Resolve deployment params
+    let resolved = collections_config::resolve(
+        &config,
+        &request.collection,
+        &request.project,
+        &request.version,
+        &request.stage,
+        &build,
+        request.use_elastic,
+        request.use_kafka,
+        request.temp_files_path.clone(),
+    )?;
+
+    // 8. Create VM
+    ps_executor::append_log_line(&client_log, "step: create_vm (New-VM)");
+    match vm_operations::create_vm(&ctx.web_server_name) {
+        Ok(_) => ps_executor::append_log_line(&client_log, "create_vm: ok"),
+        Err(e) => {
+            ps_executor::append_log_line(&client_log, &format!("create_vm: failed: {}", e));
+            return Err(e);
+        }
+    }
+
+    // 9. Run configure_vm.ps1
     let cfg_path = format!("{}\\configure_vm.ps1", resolved.script_path);
     let cfg_args = build_configure_vm_args(&resolved.configure_vm);
-    let result = ps_executor::execute_script(
+    let configure_result = ps_executor::execute_script(
         &app_data_dir,
         &cfg_path,
         &cfg_args.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
         "configure_vm",
         &ctx.web_server_name,
+        Some(&client_log),
     );
-    if !result.success {
-        return Ok(CreateStandResponse { status: "fail".to_string(), log_path: Some(result.log_path) });
+    if !configure_result.success {
+        return Ok(CreateStandResponse {
+            status: "fail".to_string(),
+            log_path: Some(client_log.to_string_lossy().to_string()),
+        });
     }
 
-    // 9. Run deploy_linux.ps1
+    // 10. Run deploy_linux.ps1
     let deploy_path = format!("{}\\deploy_linux.ps1", resolved.script_path);
     let deploy_args = build_deploy_args(&ctx, &resolved);
-    let result = ps_executor::execute_script(
+    let deploy_result = ps_executor::execute_script(
         &app_data_dir,
         &deploy_path,
         &deploy_args.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
         "deploy",
         &ctx.web_server_name,
+        Some(&client_log),
     );
-    if !result.success {
-        return Ok(CreateStandResponse { status: "fail".to_string(), log_path: Some(result.log_path) });
+    if !deploy_result.success {
+        return Ok(CreateStandResponse {
+            status: "fail".to_string(),
+            log_path: Some(client_log.to_string_lossy().to_string()),
+        });
     }
 
-    // 10. Persist stand info
+    // 11. Persist stand info
+    let stand_name = ctx.web_server_name.clone();
     let stand_info = StandInfo {
         target_server_name: ctx.target_server_name,
         target_account: ctx.target_account,
@@ -114,13 +203,23 @@ pub async fn create_stand(
 
     stands_store::add_stand(&app_data_dir, stand_info)?;
 
-    Ok(CreateStandResponse { status: "ok".to_string(), log_path: None })
+    log::info!("create_stand: stand saved: {}", stand_name);
+    ps_executor::append_log_line(&client_log, "stand saved");
+
+    Ok(CreateStandResponse {
+        status: "ok".to_string(),
+        log_path: Some(client_log.to_string_lossy().to_string()),
+    })
 }
 
-async fn resolve_build(
+fn resolve_build(
     app: &tauri::AppHandle,
-    config: &crate::models::collection::CollectionsConfig,
     request: &CreateStandRequest,
+    collection: &Collection,
+    project: &Project,
+    stage: &Stage,
+    stand_name: &str,
+    client_log: &Path,
 ) -> Result<String, String> {
     if request.build_option != "latest" {
         return request
@@ -131,23 +230,6 @@ async fn resolve_build(
 
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
 
-    let collection = config
-        .collections
-        .get(&request.collection)
-        .ok_or_else(|| format!("Коллекция {} не найдена", request.collection))?;
-    let project = collection
-        .projects
-        .get(&request.project)
-        .ok_or_else(|| format!("Проект {} не найден", request.project))?;
-    let version = project
-        .versions
-        .get(&request.version)
-        .ok_or_else(|| format!("Версия {} не найдена", request.version))?;
-    let stage = version
-        .stages
-        .get(&request.stage)
-        .ok_or_else(|| format!("Стадия {} не найдена", request.stage))?;
-
     let ps_command = format!(
         "CI-Get-LastLocation -CollectionUri {} -TeamProject {} -BuildDefinition \\{} -BranchName {}/{}",
         collection.tfvs_collection_uri,
@@ -157,26 +239,21 @@ async fn resolve_build(
         request.version,
     );
 
-    let logs_dir = app_data_dir.join("logs");
-    let _ = std::fs::create_dir_all(&logs_dir);
+    let result = ps_executor::execute_command(
+        &app_data_dir,
+        &ps_command,
+        "ci_get_last_location",
+        stand_name,
+        Some(client_log),
+    );
 
-    let powershell = std::env::var("SystemRoot")
-        .map(|root| format!("{}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", root))
-        .unwrap_or_else(|_| "powershell.exe".into());
-
-    let output = Command::new(&powershell)
-        .arg("-NoProfile")
-        .arg("-Command")
-        .arg(&ps_command)
-        .output()
-        .map_err(|e| format!("Ошибка запуска CI-Get-LastLocation: {}", e))?;
-
-    if output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        Ok(stdout)
+    if result.success {
+        Ok(result.stdout.trim().to_string())
     } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(format!("CI-Get-LastLocation завершился с ошибкой: {}", stderr.trim()))
+        Err(format!(
+            "CI-Get-LastLocation завершился с ошибкой. Лог: {}",
+            result.log_path
+        ))
     }
 }
 
